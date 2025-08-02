@@ -129,6 +129,28 @@ async def run_command(command: str, timeout: int = 30) -> Dict[str, Any]:
     except Exception as e:
         return {"output": "", "error": str(e), "returncode": -1}
 
+@app.get("/schema")
+async def schema():
+    return {
+        "tools": [
+            {
+                "name": name,
+                "description": tool.description,
+                "input": {
+                    "type": "object",
+                    "properties": {
+                        "command": {
+                            "type": "string",
+                            "description": f"Command to run via {name}"
+                        }
+                    },
+                    "required": ["command"]
+                }
+            }
+            for name, tool in TOOLS.items()
+        ]
+    }
+
 # === Optional for dev run ===
 if __name__ == "__main__":
     import uvicorn
