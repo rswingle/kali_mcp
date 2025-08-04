@@ -15,5 +15,5 @@ else
 
   # Start the server with error logging
   #exec uvicorn main:app --host 0.0.0.0 --port 3000 --log-level info
-exec /opt/venv/bin/uvicorn main:app --host 0.0.0.0 --port 3000
+  exec /opt/venv/bin/uvicorn main:app --host 0.0.0.0 --port 3001
 fi
