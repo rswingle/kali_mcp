@@ -1,4 +1,0 @@
-mcp-server
-fastapi
-uvicorn
-pydantic
