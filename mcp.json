@@ -1,0 +1,94 @@
+{
+  "mcpServers": {
+    "kali-tools-api": {
+      "command": "python",
+      "args": [
+        "-m",
+        "mcp_server_fetch"
+      ],
+      "env": {
+        "MCP_SERVER_NAME": "Kali Tools API",
+        "BASE_URL": "http://localhost:3001"
+      },
+      "settings": {
+        "endpoints": [
+          {
+            "name": "list_tools",
+            "method": "GET",
+            "url": "/tools",
+            "headers": {
+              "Accept": "application/json",
+              "Content-Type": "application/json"
+            },
+            "description": "List all available Kali tools"
+          },
+          {
+            "name": "check_tool",
+            "method": "GET",
+            "url": "/tools/{tool_name}",
+            "headers": {
+              "Accept": "application/json",
+              "Content-Type": "application/json"
+            },
+            "description": "Check if a specific tool is available"
+          },
+          {
+            "name": "execute_tool",
+            "method": "POST",
+            "url": "/execute",
+            "headers": {
+              "Accept": "application/json",
+              "Content-Type": "application/json"
+            },
+            "body_schema": {
+              "type": "object",
+              "properties": {
+                "tool": {
+                  "type": "string",
+                  "description": "Name of the Kali tool to execute"
+                },
+                "arguments": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "default": [],
+                  "description": "Command line arguments for the tool"
+                },
+                "timeout": {
+                  "type": "integer",
+                  "default": 60,
+                  "description": "Timeout in seconds for command execution"
+                }
+              },
+              "required": [
+                "tool"
+              ]
+            },
+            "description": "Execute a Kali tool with specified arguments"
+          },
+          {
+            "name": "health_check",
+            "method": "GET",
+            "url": "/health",
+            "headers": {
+              "Accept": "application/json",
+              "Content-Type": "application/json"
+            },
+            "description": "Check API server health status"
+          },
+          {
+            "name": "server_info",
+            "method": "GET",
+            "url": "/",
+            "headers": {
+              "Accept": "application/json",
+              "Content-Type": "application/json"
+            },
+            "description": "Get server information and available endpoints"
+          }
+        ]
+      }
+    }
+  }
+}
