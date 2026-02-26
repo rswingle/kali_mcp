@@ -1,9 +1,219 @@
-This is a simple MCP server that runs inside a kali docker container..
-It allows direct access to the kali toolset.
+# Kali MCP Server
 
-This is a work in progress
+A Model Context Protocol (MCP) server that exposes Kali Linux tools to AI agents. This allows LLMs to discover and execute security testing tools like nmap, sqlmap, hydra, metasploit, etc.
 
-Run:
-docker build -t kali_mcp .
+## Overview
 
-use mcp.json to connect to running contatine:
+This server runs inside a Kali Linux Docker container and provides MCP tools to:
+- List all available Kali tools
+- Check if a specific tool is available
+- Execute Kali tools with arguments
+- Monitor server health
+
+## Architecture
+
+```
+┌─────────────┐     ┌──────────────────────────┐
+│   MCP Host  │────▶│  Kali MCP Server         │
+│ (e.g., LLM) │     │  FastMCP + Docker        │
+│             │◀────│  (stdio transport)       │
+└─────────────┘     └──────────────────────────┐
+                    │  Kali Linux Container    │
+                    │  - /usr/bin tools        │
+                    │  - /usr/sbin tools       │
+                    └────────────────────────────┘
+```
+
+## Installation
+
+### Prerequisites
+
+- Docker installed on your system
+- Python 3.10+ (for local development)
+
+### Build the Docker Image
+
+```bash
+docker build -t kali-mcp-server:latest .
+```
+
+The Docker image is built from `kalilinux/kali-rolling` and includes:
+- Python 3 with FastMCP SDK
+- Kali Linux toolset (all tools from `/usr/bin`, `/usr/sbin`)
+- MCP server configuration
+
+## Running the Server
+
+### Option 1: Direct Docker Run (Recommended)
+
+The MCP server connects directly through Docker using the `mcp.json` configuration:
+
+```bash
+# Ensure Docker is running
+docker ps
+
+# The server starts automatically when your MCP client connects
+```
+
+### Option 2: Interactive Container
+
+```bash
+# Start container interactively
+docker run -it --name kali-mcp kali-mcp-server:latest
+
+# Run commands inside the container
+docker exec -it kali-mcp python3 /app/server.py
+```
+
+## Configuration
+
+### mcp.json
+
+The `mcp.json` file contains the MCP server configuration:
+
+```json
+{
+  "mcpServers": {
+    "kali-linux-tools": {
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-i",
+        "--name",
+        "kali-mcp-${SESSION_ID}",
+        "kali-mcp-server:latest"
+      ],
+      "env": {
+        "MCP_TRANSPORT": "stdio"
+      }
+    }
+  }
+}
+```
+
+This configuration:
+- Uses Docker as the command to run
+- Runs a fresh container for each session (`--rm`)
+- Uses stdio transport for MCP protocol
+- Names containers uniquely per session
+
+## MCP Tools
+
+The server exposes the following tools through MCP:
+
+### list_tools
+List all available Kali tools.
+
+**Arguments:**
+- `limit` (optional): Maximum number of tools to return
+
+### check_tool
+Check if a specific Kali tool is available.
+
+**Arguments:**
+- `tool_name` (required): Name of the tool to check
+
+### execute_tool
+Execute a Kali tool with specified arguments.
+
+**Arguments:**
+- `tool` (required): Name of the Kali tool to execute
+- `arguments` (optional, default: []): List of command line arguments for the tool
+- `timeout` (optional, default: 60): Timeout in seconds for command execution
+
+### health_check
+Check server health status.
+
+**Arguments:** None
+
+### server_info
+Get server information and available endpoints.
+
+**Arguments:** None
+
+## Development
+
+### Run Locally (Outside Docker)
+
+```bash
+# Install dependencies
+pip install "mcp[cli]" uvicorn
+
+# Run server
+python3 server.py [--transport stdio|streamable-http]
+```
+
+Server will start with stdio transport (default) or HTTP on port 3001.
+
+### Directory Structure
+
+- `server.py` - FastMCP server implementation
+- `mcp.json` - MCP server configuration for Docker
+- `Dockerfile` - Docker image definition
+- `README.md` - This documentation
+
+## Security Considerations
+
+**⚠️ IMPORTANT**: This server executes system commands and should be used with caution:
+
+- ⚠️ **No authentication** - This is a local development tool only
+- ⚠️ **Direct command execution** - Any Kali tool can be run with any arguments
+- ⚠️ **No input validation** - Arguments are passed directly to system commands
+
+### Production Recommendations
+
+If deploying in a production environment:
+
+1. Add authentication (API keys, OAuth, etc.)
+2. Implement input validation and sanitization
+3. Add rate limiting
+4. Restrict which tools can be executed
+5. Run in a restricted Docker network
+6. Enable logging and monitoring
+
+## Troubleshooting
+
+### Container won't start
+
+```bash
+# Check if Docker is running
+docker ps
+
+# Check logs
+docker logs kali-mcp-${SESSION_ID}
+
+# Ensure image exists
+docker images | grep kali-mcp-server
+```
+
+### Tools not found
+
+```bash
+# Verify container is running Kali Linux
+docker exec -it kali-mcp-${SESSION_ID} cat /etc/os-release
+
+# Check tool directory
+docker exec kali-mcp-${SESSION_ID} ls /usr/bin | head -20
+```
+
+### Connection refused
+
+```bash
+# Verify container is running
+docker ps | grep kali-mcp
+
+# Check container ports (if using HTTP transport)
+docker port kali-mcp-${SESSION_ID}
+```
+
+### Docker not found
+
+Ensure Docker is installed and accessible in your PATH:
+```bash
+docker --version
+```
+
+## License
+
+This is a work in progress for internal/testing use only.

@@ -1,41 +1,28 @@
-FROM kalilinux/kali-rolling
+# Kali MCP Server Docker image - Minimal version
+FROM python:3.10-slim
 
-# Install required tools and Python
+# Install system dependencies needed for MCP
 RUN apt-get update && apt-get install -y \
-  python3 \
-  python3-pip \
-  # Add only the specific Kali tools you actually need
-  kali-linux-default \
-  kali-tools-information-gathering \
-  kali-tools-vulnerability \
-  kali-tools-web \
-  kali-tools-database\
-  kali-tools-passwords\
-  kali-tools-exploitation\
-  kali-tools-reverse-engineering\
-  kali-tools-social-engineering\
-  kali-tools-sniffing-spoofing\
-  kali-tools-post-exploitation\
-  kali-tools-forensics\
-  kali-tools-reporting\
-  && rm -rf /var/lib/apt/lists/*
+    build-essential \
+    libffi-dev \
+    libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install Python packages (using pip3 directly, not pipx)
-RUN pip3 install --break-system-packages fastapi uvicorn[standard] pydantic
+# Create virtual environment and install MCP SDK
+RUN python -m venv /opt/venv && \
+    /opt/venv/bin/pip install --upgrade pip && \
+    /opt/venv/bin/pip install "mcp[cli]" uvicorn
 
-# Copy server file
+# Copy server files
 WORKDIR /app
+COPY server.py .
 COPY main.py .
-RUN chmod +x main.py
 
-# Expose port
-EXPOSE 3001
+# Make scripts executable
+RUN chmod +x server.py main.py
 
-# Option 1: Run the Python script directly (RECOMMENDED)
-CMD ["python3", "/app/main.py"]
+# Use virtual environment Python as default
+ENV PATH="/opt/venv/bin:$PATH"
 
-# Option 2: Use uvicorn command (alternative)
-# CMD ["python3", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "3001"]
-
-# Option 3: Use uvicorn directly (alternative)
-# CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "3001"]
+# Default command - run with stdio transport for MCP
+CMD ["python", "-u", "/app/server.py"]
