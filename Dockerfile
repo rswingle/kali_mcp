@@ -1,5 +1,7 @@
+
 # Kali MCP Server Docker image - Minimal version
-FROM python:3.10-slim
+#FROM python:3.10-slim
+FROM docker pull kalilinux/kali-rolling
 
 # Install system dependencies needed for MCP
 RUN apt-get update && apt-get install -y \
