@@ -98,6 +98,74 @@ This configuration:
 - Uses stdio transport for MCP protocol
 - Names containers uniquely per session
 
+## Client Install Script
+
+This repository includes `add.sh`, a helper script that installs the Kali MCP server entry into supported MCP client configs.
+
+### Supported Targets
+
+- Claude Desktop
+- Claude Code
+- Cursor
+- Windsurf
+- VS Code / GitHub Copilot
+- Continue
+- Cline
+- Roo Code
+- OpenCode
+- Zed
+- Codex
+- Gemini CLI
+
+### Usage
+
+```bash
+# Show help
+./add.sh --help
+
+# Add to a single client
+./add.sh --claude-desktop
+./add.sh --opencode
+
+# Add to multiple clients at once
+./add.sh --claude-code --cursor --vscode
+
+# Add to every supported target
+./add.sh --all
+```
+
+### What the Script Does
+
+- Uses the local `docker-wrapper.sh` path from this repository
+- Adds or updates the `kali-linux-tools` MCP entry
+- Creates missing config files and parent directories when needed
+- Preserves unrelated config entries in existing files
+
+### Config Targets
+
+| Target | Config path |
+| --- | --- |
+| Claude Desktop | `~/Library/Application Support/Claude/claude_desktop_config.json` on macOS, `~/.config/Claude/claude_desktop_config.json` on Linux, `%APPDATA%/Claude/claude_desktop_config.json` on Windows |
+| Claude Code | `.mcp.json` |
+| Cursor | `.cursor/mcp.json` |
+| Windsurf | `~/.codeium/windsurf/mcp_config.json` on macOS/Linux, `%USERPROFILE%/.codeium/windsurf/mcp_config.json` on Windows |
+| VS Code / Copilot | `.vscode/mcp.json` |
+| Continue | `~/.continue/config.json` on macOS/Linux, `%USERPROFILE%/.continue/config.json` on Windows |
+| Cline | `~/Library/Application Support/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json` on macOS, `~/.config/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json` on Linux, `%APPDATA%/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json` on Windows |
+| Roo Code | `~/Library/Application Support/Code/User/globalStorage/rooveterinaryinc.roo-cline/settings/mcp_settings.json` on macOS, `~/.config/Code/User/globalStorage/rooveterinaryinc.roo-cline/settings/mcp_settings.json` on Linux, `%APPDATA%/Code/User/globalStorage/rooveterinaryinc.roo-cline/settings/mcp_settings.json` on Windows |
+| OpenCode | `opencode.json` |
+| Zed | `~/.config/zed/settings.json` on macOS/Linux, `%APPDATA%/Zed/settings.json` on Windows |
+| Codex | `.codex/config.toml` |
+| Gemini CLI | `~/.gemini/settings.json` on macOS/Linux, `%USERPROFILE%/.gemini/settings.json` on Windows |
+
+### Notes
+
+- Project-level targets write into this repository.
+- Global targets write into your home directory config locations.
+- The script now handles macOS, Linux, and Windows-style config paths for supported global targets.
+- On Windows, run the script from Git Bash, MSYS2, or Cygwin so `bash` and the wrapper-based command remain valid.
+- After updating a client config, restart that client so it reloads MCP servers.
+
 ## MCP Tools
 
 The server exposes the following tools through MCP:
