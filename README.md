@@ -42,6 +42,31 @@ The Docker image is built from `kalilinux/kali-rolling` and includes:
 - Kali Linux toolset (all tools from `/usr/bin`, `/usr/sbin`)
 - MCP server configuration
 
+### Use a Prebuilt Image Instead
+
+If your environment cannot build from Kali package repositories, you can provide the image ahead of time and skip the local build step.
+
+#### Option 1: Load an exported image archive
+
+```bash
+docker load < kali-mcp-server.tar
+```
+
+#### Option 2: Pull from a registry and tag locally
+
+```bash
+docker pull <your-registry>/kali-mcp-server:latest
+docker tag <your-registry>/kali-mcp-server:latest kali-mcp-server:latest
+```
+
+#### Verify the image exists locally
+
+```bash
+docker image inspect kali-mcp-server:latest
+```
+
+The MCP client configuration in this repository expects the local image name `kali-mcp-server:latest`.
+
 ## Running the Server
 
 ### Option 1: Direct Docker Run (Recommended)
@@ -173,8 +198,16 @@ Once the Docker image is built, an MCP client can launch this server on demand a
 ### Recommended Setup Flow
 
 ```bash
-# 1. Build the image
+# 1. Build the image, or load/pull a prebuilt one
 docker build -t kali-mcp-server:latest .
+
+# Alternative: load or pull a prebuilt image
+# docker load < kali-mcp-server.tar
+# docker pull <your-registry>/kali-mcp-server:latest
+# docker tag <your-registry>/kali-mcp-server:latest kali-mcp-server:latest
+
+# 1b. Verify the image exists locally
+docker image inspect kali-mcp-server:latest
 
 # 2. Install the MCP entry into one or more clients
 ./add.sh --claude-desktop
@@ -229,6 +262,8 @@ Use prompts like these in your MCP-enabled client:
 - Treat `execute_tool` as direct command execution inside the Kali container.
 - Review generated arguments in your client before approving tool execution.
 - Use this server only in environments where running security tools is appropriate.
+- `add.sh` installs MCP client config only; it does not build, pull, or publish Docker images.
+- In restricted environments, using a prebuilt `kali-mcp-server:latest` image may be more reliable than building locally.
 
 ## MCP Tools
 
