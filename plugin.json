@@ -1,0 +1,5 @@
+{
+"name": "kali-operator",
+"description": "CTF and authorized penetration testing agent powered by Kali Linux MCP tools",
+"author": { "name": "Ray Swingle", "email": "rswingle@polywood.com" }
+}
