@@ -209,6 +209,39 @@ This repository includes `add.sh`, a helper script that installs the Kali MCP se
 
 Once the Docker image is built, an MCP client can launch this server on demand and call its tools.
 
+### One-Command Deployment Script
+
+This repository includes `deploy_kali_mcp.sh` to automate common local deployment tasks:
+
+1. Build the Docker image (`kali-mcp-server:latest` by default)
+2. Install/update the systemd service using `install_systemd_service.sh`
+3. Install/update the Claude agent file at `~/.claude/agents/kali-operator.md`
+
+```bash
+# Show help
+./deploy_kali_mcp.sh --help
+
+# Preview actions without making changes
+./deploy_kali_mcp.sh --dry-run
+
+# Run full deployment
+./deploy_kali_mcp.sh
+```
+
+Optional overrides:
+
+```bash
+# Use a custom Docker tag
+./deploy_kali_mcp.sh --image-tag kali-mcp-server:stable
+
+# Install agent file to a custom Claude agents directory
+./deploy_kali_mcp.sh --claude-agent-dir /path/to/agents
+```
+
+Notes:
+- `install_systemd_service.sh install` may prompt for sudo/root privileges.
+- The script is intended for Linux hosts that use systemd.
+
 ### Recommended Setup Flow
 
 ```bash
