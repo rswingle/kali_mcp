@@ -24,6 +24,7 @@ What this script does:
   1) Builds the Docker image
   2) Installs/updates the systemd service
   3) Installs/updates the Claude agent file
+  4) Installs MCP config for all supported clients via ./add.sh --all
 EOF
 }
 
@@ -95,23 +96,35 @@ if [[ ! -x "${SCRIPT_DIR}/install_systemd_service.sh" ]]; then
   exit 1
 fi
 
-log "Step 1/3: Building Docker image: ${IMAGE_TAG}"
+if [[ ! -x "${SCRIPT_DIR}/add.sh" ]]; then
+  log "Expected executable script: ${SCRIPT_DIR}/add.sh"
+  exit 1
+fi
+
+log "Step 1/4: Building Docker image: ${IMAGE_TAG}"
 run_step docker build -t "${IMAGE_TAG}" "${SCRIPT_DIR}"
 
-log "Step 2/3: Installing/updating systemd service"
+log "Step 2/4: Installing/updating systemd service"
 if [[ "${DRY_RUN}" -eq 1 ]]; then
   log "[dry-run] IMAGE=${IMAGE_TAG} ${SCRIPT_DIR}/install_systemd_service.sh install"
 else
   IMAGE="${IMAGE_TAG}" "${SCRIPT_DIR}/install_systemd_service.sh" install
 fi
 
-log "Step 3/3: Installing Claude agent: ${AGENT_TARGET_FILE}"
+log "Step 3/4: Installing Claude agent: ${AGENT_TARGET_FILE}"
 if [[ "${DRY_RUN}" -eq 1 ]]; then
   log "[dry-run] mkdir -p ${CLAUDE_AGENT_DIR}"
   log "[dry-run] cp ${AGENT_SOURCE_FILE} ${AGENT_TARGET_FILE}"
 else
   mkdir -p "${CLAUDE_AGENT_DIR}"
   cp "${AGENT_SOURCE_FILE}" "${AGENT_TARGET_FILE}"
+fi
+
+log "Step 4/4: Installing MCP config for all supported clients"
+if [[ "${DRY_RUN}" -eq 1 ]]; then
+  log "[dry-run] ${SCRIPT_DIR}/add.sh --all"
+else
+  "${SCRIPT_DIR}/add.sh" --all
 fi
 
 log "Deployment complete."
