@@ -166,6 +166,70 @@ This repository includes `add.sh`, a helper script that installs the Kali MCP se
 - On Windows, run the script from Git Bash, MSYS2, or Cygwin so `bash` and the wrapper-based command remain valid.
 - After updating a client config, restart that client so it reloads MCP servers.
 
+## Use the Server from an MCP Client
+
+Once the Docker image is built, an MCP client can launch this server on demand and call its tools.
+
+### Recommended Setup Flow
+
+```bash
+# 1. Build the image
+docker build -t kali-mcp-server:latest .
+
+# 2. Install the MCP entry into one or more clients
+./add.sh --claude-desktop
+# or
+./add.sh --claude-code --cursor --vscode
+
+# 3. Restart the client you updated
+```
+
+### How MCP Usage Works
+
+1. Your MCP client loads the `kali-linux-tools` server entry.
+2. When the client connects, it starts the Docker-backed server.
+3. The client discovers the available MCP tools.
+4. You ask the client to inspect tools or run a Kali command.
+5. The server returns structured results over MCP.
+
+### Verify the Client Connection
+
+After restarting your MCP client, verify the server is available by asking it to:
+
+- list available tools from `kali-linux-tools`
+- run `health_check`
+- run `server_info`
+
+If the client is connected correctly, it should show the server tools and return a healthy status.
+
+### Example MCP Prompts
+
+Use prompts like these in your MCP-enabled client:
+
+- `List the first 20 Kali tools exposed by kali-linux-tools.`
+- `Check whether sqlmap is installed.`
+- `Run nmap --version using the kali-linux-tools MCP server.`
+- `Run health_check on the kali-linux-tools server.`
+- `Show server_info for the kali-linux-tools MCP server.`
+
+### Example Tool Mappings
+
+| Intent | MCP tool | Example |
+| --- | --- | --- |
+| Discover tools | `list_tools` | `list_tools(limit=20)` |
+| Check one tool | `check_tool` | `check_tool(tool_name="nmap")` |
+| Execute a command | `execute_tool` | `execute_tool(tool="nmap", arguments=["--version"])` |
+| Verify health | `health_check` | `health_check()` |
+| Inspect server metadata | `server_info` | `server_info()` |
+
+### Safe Usage Guidance
+
+- Start with read-only or version-check commands such as `--help` or `--version`.
+- Prefer targeted commands over broad scans until you confirm the client-server setup works.
+- Treat `execute_tool` as direct command execution inside the Kali container.
+- Review generated arguments in your client before approving tool execution.
+- Use this server only in environments where running security tools is appropriate.
+
 ## MCP Tools
 
 The server exposes the following tools through MCP:
