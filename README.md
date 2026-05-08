@@ -37,6 +37,20 @@ This server runs inside a Kali Linux Docker container and provides MCP tools to:
 docker build -t kali-mcp-server:latest .
 ```
 
+If your Docker environment sits behind TLS inspection or a corporate proxy, inject the trusted root CA during build:
+
+```bash
+docker build \
+  --build-arg KALI_REPO_URL=https://http.kali.org/kali \
+  --build-arg CUSTOM_CA_PEM="$(cat company-root-ca.crt)" \
+  -t kali-mcp-server:latest .
+```
+
+Notes:
+- `company-root-ca.crt` should be a PEM-encoded root certificate trusted by your network.
+- The Dockerfile defaults to Kali's official `http://http.kali.org/kali` source. If you switch to HTTPS, the Dockerfile installs this certificate before `apt-get update` so Kali package downloads can validate TLS correctly.
+- If your shell has trouble with multiline PEM build args, prefer the prebuilt image workflow below.
+
 The Docker image is built from `kalilinux/kali-rolling` and includes:
 - Python 3 with FastMCP SDK
 - Kali Linux toolset (all tools from `/usr/bin`, `/usr/sbin`)
@@ -200,6 +214,9 @@ Once the Docker image is built, an MCP client can launch this server on demand a
 ```bash
 # 1. Build the image, or load/pull a prebuilt one
 docker build -t kali-mcp-server:latest .
+
+# If needed, force HTTPS mirror and inject a trusted corporate/proxy root CA
+# docker build --build-arg KALI_REPO_URL=https://http.kali.org/kali --build-arg CUSTOM_CA_PEM="$(cat company-root-ca.crt)" -t kali-mcp-server:latest .
 
 # Alternative: load or pull a prebuilt image
 # docker load < kali-mcp-server.tar
