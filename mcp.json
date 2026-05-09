@@ -1,1 +1,1 @@
-{"mcpServers": {"kali-linux-tools": {"command": "bash", "args": ["/Users/ray/Development/kali_mcp/docker-wrapper.sh", "run", "--rm", "-i", "-e", "MCP_TRANSPORT=stdio", "kali-mcp-server:latest"]}}}
+{"mcpServers": {"kali-linux-tools": {"command": "bash", "args": ["/opt/kali_mcp/docker-wrapper.sh", "run", "--rm", "-i", "-e", "MCP_TRANSPORT=stdio", "kali-mcp-server:latest"]}}}
